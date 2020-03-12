@@ -20,15 +20,26 @@
 #include <mysql.h>
 #include <stddef.h>
 #include <stdio.h>
-
+#include <dirent.h>
 
 void list(void) {
+	DIR *d;
+	struct dirent *dirEntry;
 
+	d = opendir(".");
+	if (d != NULL) {
+		while((dirEntry = readdir(d)) != NULL) {
+			printf("%s\n", dirEntry->d_name);
+		}
+		closedir(d);
+	}
 }
 
 
 int main(void) {
 	MYSQL *con = mysql_init(NULL);
+
+	list();
 
 	if(con == NULL) {
 		fprintf(stderr, "%s\n", mysql_error(con));
