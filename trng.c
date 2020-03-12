@@ -1,6 +1,6 @@
 /*
  *
- * spicy-bits.org True Random Number Generator (TRNG)
+ * True Random Number Generator (TRNG)
  * Copyright (C) 2020 Manny Peterson <me@mannypeterson.com>
  *
  * This program is free software: you can redistribute it and/or modify

@@ -3563,7 +3563,7 @@ Standard 10-pin 0.1" header. Use with straight break away headers (SKU : PRT-001
 <sheets>
 <sheet>
 <plain>
-<text x="96.52" y="86.36" size="1.778" layer="91">spicy-bits.org True Random Number Generator (TRNG)
+<text x="127" y="83.82" size="1.778" layer="91" align="center">True Random Number Generator (TRNG)
 Copyright (C) 2020 Manny Peterson &lt;me@mannypeterson.com&gt;</text>
 </plain>
 <instances>
