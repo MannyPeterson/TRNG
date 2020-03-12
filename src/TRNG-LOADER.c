@@ -21,6 +21,19 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <dirent.h>
+#include <string.h>
+
+int begins(char *str, char *pre) {
+	size_t strLen = strlen(str);
+	size_t preLen = strlen(pre);
+	if(strLen < preLen) {
+		return 0;
+	} else if(memcmp(pre, str, preLen) == 0) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
 
 void list(void) {
 	DIR *d;
@@ -29,7 +42,11 @@ void list(void) {
 	d = opendir(".");
 	if (d != NULL) {
 		while((dirEntry = readdir(d)) != NULL) {
-			printf("%s\n", dirEntry->d_name);
+			if(begins(dirEntry->d_name, "CHUNK")) {
+				printf("%s <-- BEGINS WITH TRNG\n", dirEntry->d_name);
+			} else {
+				printf("%s\n", dirEntry->d_name);
+			}
 		}
 		closedir(d);
 	}
