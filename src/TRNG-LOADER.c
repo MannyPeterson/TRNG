@@ -19,9 +19,13 @@
  */
 #include <mysql.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <string.h>
+
+#define MAXFILES 100
+#define MAXFILENAMELEN 100
 
 int begins(char *str, char *pre) {
 	size_t strLen = strlen(str);
@@ -35,17 +39,18 @@ int begins(char *str, char *pre) {
 	}
 }
 
-void list(void) {
+void find(char **chunkFileNames) {
 	DIR *d;
 	struct dirent *dirEntry;
-
+	int chunkFileNamesPos = 0;
 	d = opendir(".");
 	if (d != NULL) {
 		while((dirEntry = readdir(d)) != NULL) {
 			if(begins(dirEntry->d_name, "CHUNK")) {
-				printf("%s <-- BEGINS WITH TRNG\n", dirEntry->d_name);
-			} else {
-				printf("%s\n", dirEntry->d_name);
+				*(chunkFileNames + chunkFileNamesPos) = (char *)malloc(MAXFILENAMELEN * sizeof(char));
+				memset(*(chunkFileNames + chunkFileNamesPos), 0, MAXFILENAMELEN * sizeof(char));
+				strcpy(*(chunkFileNames + chunkFileNamesPos), dirEntry->d_name);
+				chunkFileNamesPos++;
 			}
 		}
 		closedir(d);
@@ -53,10 +58,30 @@ void list(void) {
 }
 
 
-int main(void) {
-	MYSQL *con = mysql_init(NULL);
+void run(void) {
+	char **chunkFileNames = (char **)malloc(MAXFILES * sizeof(char *));
+	memset(chunkFileNames, 0, MAXFILES * sizeof(char *));
 
-	list();
+	find(chunkFileNames);
+
+	for(int i = 0; i < MAXFILES; i++) {
+		if(*(chunkFileNames + i) != NULL) {
+			printf("FILE %02d: %s\n", i, *(chunkFileNames + i));
+		} else {
+			break;
+		}
+	}
+
+
+	free(chunkFileNames);
+}
+
+int main(void) {
+
+
+	run();
+/*
+	MYSQL *con = mysql_init(NULL);
 
 	if(con == NULL) {
 		fprintf(stderr, "%s\n", mysql_error(con));
@@ -72,6 +97,6 @@ int main(void) {
 
 
 	mysql_close(con);
-
+*/
 }
 
