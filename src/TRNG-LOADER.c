@@ -27,6 +27,11 @@
 #define MAXFILES 100
 #define MAXFILENAMELEN 100
 
+int begins(char *, char *);
+void find(char **);
+void load(char *, char **);
+void run(void);
+
 int begins(char *str, char *pre) {
 	size_t strLen = strlen(str);
 	size_t preLen = strlen(pre);
@@ -57,6 +62,9 @@ void find(char **chunkFileNames) {
 	}
 }
 
+void load(char *chunkFileName,  char **chunksBuffer) {
+
+}
 
 void run(void) {
 	char **chunkFileNames = (char **)malloc(MAXFILES * sizeof(char *));
@@ -67,6 +75,7 @@ void run(void) {
 	for(int i = 0; i < MAXFILES; i++) {
 		if(*(chunkFileNames + i) != NULL) {
 			printf("FILE %02d: %s\n", i, *(chunkFileNames + i));
+			free(*(chunkFileNames + i)); // REMEMBER TO DO THIS LAST
 		} else {
 			break;
 		}
