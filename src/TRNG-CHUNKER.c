@@ -1,6 +1,6 @@
 /*
  *
- * True Random Number Generator (TRNG)
+ * True Random Number Generator (TRNG) Server
  * Copyright (C) 2020 Manny Peterson <me@mannypeterson.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -30,10 +30,11 @@
 #define SETBIT(x, i) x |= (1 << i)
 #define RSTBIT(x, i) x &= ~(1 << i)
 
+char *chunkDirectory;
 void read(int *, int);
 void build(unsigned char *, int *, int);
 void run();
-void init();
+void init(char *);
 
 void read(int *dataBuffer, int dataBufferSize) {
 	int dataBufferPos = 0;
@@ -77,7 +78,7 @@ void run(void) {
 
 	time(&t);
 	localTime = *localtime(&t);
-	sprintf(chunkFileName, "CHUNK-%04d%02d%02d%02d%02d.txt",localTime.tm_year + 1900, localTime.tm_mon + 1, localTime.tm_mday, localTime.tm_hour, localTime.tm_min);
+	sprintf(chunkFileName, "%s/CHUNK-%04d%02d%02d%02d%02d.txt", chunkDirectory, localTime.tm_year + 1900, localTime.tm_mon + 1, localTime.tm_mday, localTime.tm_hour, localTime.tm_min);
 
 	for(int c = 0; c < FILESIZE; c++) {
 	        memset(dataBuffer, 0, CHUNKSIZE * sizeof(int) * 8);
@@ -97,11 +98,21 @@ void run(void) {
 	free(chunkBuffer);
 }
 
-void init(void) {
+void init(char *arg) {
+        chunkDirectory = (char *)malloc(500 * sizeof(char));
+        memset(chunkDirectory, 0, 500 * sizeof(char));
+	strcpy(chunkDirectory, arg);
+	fprintf(stdout, "True Random Number Generator Server (Chunker)\n");
+	fprintf(stdout, "(C)Copyright 2020 Manny Peterson\n\n");
+	fprintf(stdout, "Using: %s\n", chunkDirectory);
 	wiringPiSetup();
 }
 
-int main (void) {
-	init();
+int main(int argc, char *argv[]) {
+	if(argc != 2) {
+		fprintf(stdout, "TRNG-CHUNKER: Missing parameter chunk directory.\n");
+		return(1);
+	}
+	init(argv[1]);
 	run();
 }
