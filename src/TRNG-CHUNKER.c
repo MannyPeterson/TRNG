@@ -32,6 +32,7 @@
 #define RSTBIT(x, i) x &= ~(1 << i)
 
 char *chunkDirectory;
+int chunkFileCount;
 void read(int *, int);
 void build(unsigned char *, int *, int);
 void run();
@@ -68,7 +69,7 @@ void build(unsigned char *chunkBuffer, int *dataBuffer, int chunkBufferSize) {
 	} while (chunkBufferPos < chunkBufferSize);
 }
 
-void run(void) {
+void write(void) {
 	time_t t;
 	struct tm localTime;
 	FILE *chunkFile;
@@ -96,19 +97,31 @@ void run(void) {
 	free(chunkBuffer);
 }
 
+void run() {
+	for(int i = 0; i < chunkFileCount; i++) {
+		write();
+	}
+}
+
 void init(char *arg) {
         chunkDirectory = (char *)malloc(MAXFILENAMELEN * sizeof(char));
         memset(chunkDirectory, 0, MAXFILENAMELEN * sizeof(char));
 	strcpy(chunkDirectory, arg);
 	fprintf(stdout, "True Random Number Generator Server (Chunker)\n");
 	fprintf(stdout, "(C)Copyright 2020 Manny Peterson\n\n");
+	fprintf(stdout, "Files: %d\n", chunkFileCount);
 	fprintf(stdout, "Using: %s\n", chunkDirectory);
 	wiringPiSetup();
 }
 
 int main(int argc, char *argv[]) {
-	if(argc != 2) {
-		fprintf(stdout, "TRNG-CHUNKER: Missing parameter chunk directory.\n");
+	if(argc != 3) {
+		fprintf(stdout, "TRNG-CHUNKER: Missing parameter chunk directory and/or chunk file count.\n");
+		exit(1);
+	}
+	chunkFileCount = atoi(argv[2]);
+	if(chunkFileCount < 1) {
+		fprintf(stdout, "TRNG-CHUNKER: Must specify a chunk file count of 1 or greater.\n");
 		exit(1);
 	}
 	init(argv[1]);
