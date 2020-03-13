@@ -124,6 +124,7 @@ void run(void) {
 			fprintf(stdout, "TRNG-LOADER: Processing chunk file %s\n", *(chunkFileNames + i));
 			memset(chunksBuffer, 0, FILESIZE * sizeof(char *));
 			load(*(chunkFileNames + i), chunksBuffer);
+			remove(*(chunkFileNames + i));
 			insert(chunksBuffer);
 			free(*(chunkFileNames + i)); // REMEMBER TO DO THIS LAST
 		} else {

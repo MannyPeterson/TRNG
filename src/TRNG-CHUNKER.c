@@ -25,6 +25,7 @@
 
 #define CHUNKSIZE 128 /* BYTES */
 #define FILESIZE  100 /* CHUNKS */
+#define MAXFILENAMELEN 500
 #define CLOCK 0
 #define DATA 2
 #define SETBIT(x, i) x |= (1 << i)
@@ -71,22 +72,19 @@ void run(void) {
 	time_t t;
 	struct tm localTime;
 	FILE *chunkFile;
-	char *chunkFileName = (char *) malloc(40 * sizeof(char));
+	char *chunkFileName = (char *) malloc(MAXFILENAMELEN * sizeof(char));
         int *dataBuffer = (int *) malloc(CHUNKSIZE * sizeof(int) * 8);
         unsigned char *chunkBuffer = (unsigned char *) malloc(CHUNKSIZE * sizeof(unsigned char));
-	memset(chunkFileName, 0, 40 * sizeof(char));
-
+	memset(chunkFileName, 0, MAXFILENAMELEN * sizeof(char));
 	time(&t);
 	localTime = *localtime(&t);
 	sprintf(chunkFileName, "%s/CHUNK-%04d%02d%02d%02d%02d.txt", chunkDirectory, localTime.tm_year + 1900, localTime.tm_mon + 1, localTime.tm_mday, localTime.tm_hour, localTime.tm_min);
-
+	fprintf(stdout, "TRNG-CHUNKER: Writing chunk file %s\n", chunkFileName);
 	for(int c = 0; c < FILESIZE; c++) {
 	        memset(dataBuffer, 0, CHUNKSIZE * sizeof(int) * 8);
         	memset(chunkBuffer, 0, CHUNKSIZE * sizeof(char));
-
 	        read(dataBuffer, CHUNKSIZE * 8);
 	        build(chunkBuffer, dataBuffer, CHUNKSIZE);
-
 		chunkFile = fopen(chunkFileName, "a");
 		for(int i = 0; i < CHUNKSIZE; i++) {
 	                fprintf(chunkFile, "%02X", *(chunkBuffer + i));
@@ -99,8 +97,8 @@ void run(void) {
 }
 
 void init(char *arg) {
-        chunkDirectory = (char *)malloc(500 * sizeof(char));
-        memset(chunkDirectory, 0, 500 * sizeof(char));
+        chunkDirectory = (char *)malloc(MAXFILENAMELEN * sizeof(char));
+        memset(chunkDirectory, 0, MAXFILENAMELEN * sizeof(char));
 	strcpy(chunkDirectory, arg);
 	fprintf(stdout, "True Random Number Generator Server (Chunker)\n");
 	fprintf(stdout, "(C)Copyright 2020 Manny Peterson\n\n");
