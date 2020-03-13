@@ -27,22 +27,26 @@
 #define CHUNKSIZE 128 /* BYTES */
 #define FILESIZE 100 /* CHUNKS */
 #define MAXFILES 100
-#define MAXFILENAMELEN 100
+#define MAXFILENAMELEN 500
+#define MAXQUERYLEN 500
+#define MAX
 
+char *chunkDirectory;
 int begins(char *, char *);
 void find(char **);
 void load(char *, char **);
 void run(void);
+void init(char *);
 
 int begins(char *str, char *pre) {
 	size_t strLen = strlen(str);
 	size_t preLen = strlen(pre);
 	if(strLen < preLen) {
-		return 0;
+		return(0);
 	} else if(memcmp(pre, str, preLen) == 0) {
-		return 1;
+		return(1);
 	} else {
-		return 0;
+		return(0);
 	}
 }
 
@@ -50,13 +54,15 @@ void find(char **chunkFileNames) {
 	DIR *d;
 	struct dirent *dirEntry;
 	int chunkFileNamesPos = 0;
-	d = opendir(".");
+	d = opendir(chunkDirectory);
 	if (d != NULL) {
 		while((dirEntry = readdir(d)) != NULL) {
 			if(begins(dirEntry->d_name, "CHUNK-")) {
 				*(chunkFileNames + chunkFileNamesPos) = (char *)malloc(MAXFILENAMELEN * sizeof(char));
 				memset(*(chunkFileNames + chunkFileNamesPos), 0, MAXFILENAMELEN * sizeof(char));
-				strcpy(*(chunkFileNames + chunkFileNamesPos), dirEntry->d_name);
+				strcpy(*(chunkFileNames + chunkFileNamesPos), chunkDirectory);
+				strcat(*(chunkFileNames + chunkFileNamesPos), "/");
+				strcat(*(chunkFileNames + chunkFileNamesPos), dirEntry->d_name);
 				chunkFileNamesPos++;
 			}
 		}
@@ -67,7 +73,7 @@ void find(char **chunkFileNames) {
 void load(char *chunkFileName,  char **chunksBuffer) {
 	FILE *chunkFile;
 	int chunksBufferPos = 0;
-	char *chunkBuffer = (char *)malloc(CHUNKSIZE * 2 * sizeof(char) + 10); /* ADDING 10 BYTES TO ACCOMODATE NEWLINE, ETC. */
+	char *chunkBuffer = (char *)malloc(CHUNKSIZE * 2 * sizeof(char) + 10); /* ADDING 10 BYTES TO ACCOMODATE NEWLINE, NULL, ETC. */
 	memset(chunkBuffer, 0, CHUNKSIZE * 2 * sizeof(char) + 10);
 	chunkFile = fopen(chunkFileName, "r");
 	while(fgets(chunkBuffer, CHUNKSIZE * 2 *  sizeof(char) + 10, chunkFile) != NULL) {
@@ -82,21 +88,20 @@ void load(char *chunkFileName,  char **chunksBuffer) {
 
 void insert(char **chunksBuffer) {
         MYSQL *db = mysql_init(NULL);
-	char *query = (char *)malloc(500 * sizeof(char));
-	memset(query, 0, 500 * sizeof(char));
+	char *query = (char *)malloc(MAXQUERYLEN * sizeof(char));
+	memset(query, 0, MAXQUERYLEN * sizeof(char));
 
         if(db == NULL) {
-                fprintf(stderr, "%s\n", mysql_error(db));
-                return;
+                fprintf(stdout, "TRNG-LOADER: %s\n", mysql_error(db));
+                exit(1);
         }
         if(mysql_real_connect(db, "localhost", "TRNG", "TRNGTRNG", "TRNG", 0, NULL, 0) == NULL) {
-                fprintf(stderr, "%s\n", mysql_error(db));
-                return;
+                fprintf(stdout, "TRNG-LOADER: %s\n", mysql_error(db));
+                exit(1);
         }
 	for(int i = 0; i < FILESIZE; i++) {
 		if(*(chunksBuffer + i) != NULL) {
-			printf("CHUNK %03d: %s\n", i, *(chunksBuffer + i));
-			memset(query, 0, 500 * sizeof(char));
+			memset(query, 0, MAXQUERYLEN * sizeof(char));
 			strcat(query, "INSERT INTO chunks VALUES ('");
 			strcat(query, *(chunksBuffer + i));
 			strcat(query, "', NOW())");
@@ -113,11 +118,11 @@ void run(void) {
 	char **chunkFileNames = (char **)malloc(MAXFILES * sizeof(char *));
 	memset(chunkFileNames, 0, MAXFILES * sizeof(char *));
 	char **chunksBuffer = (char **)malloc(FILESIZE * sizeof(char *));
-	memset(chunksBuffer, 0, FILESIZE * sizeof(char *));
 	find(chunkFileNames);
 	for(int i = 0; i < MAXFILES; i++) {
 		if(*(chunkFileNames + i) != NULL) {
-			printf("FILE %02d: %s\n", i, *(chunkFileNames + i));
+			fprintf(stdout, "TRNG-LOADER: Processing chunk file %s\n", *(chunkFileNames + i));
+			memset(chunksBuffer, 0, FILESIZE * sizeof(char *));
 			load(*(chunkFileNames + i), chunksBuffer);
 			insert(chunksBuffer);
 			free(*(chunkFileNames + i)); // REMEMBER TO DO THIS LAST
@@ -125,30 +130,26 @@ void run(void) {
 			break;
 		}
 	}
+	free(chunksBuffer);
 	free(chunkFileNames);
 }
 
-int main(void) {
+void init(char *arg) {
+        chunkDirectory = (char *)malloc(MAXFILENAMELEN * sizeof(char));
+        memset(chunkDirectory, 0, MAXFILENAMELEN * sizeof(char));
+        strcpy(chunkDirectory, arg);
+        fprintf(stdout, "True Random Number Generator Server (Loader)\n");
+        fprintf(stdout, "(C)Copyright 2020 Manny Peterson\n\n");
+        fprintf(stdout, "Using: %s\n", chunkDirectory);
+}
 
-
+int main(int argc, char *argv[]) {
+	if(argc != 2) {
+		fprintf(stdout, "TRNG-LOADER: Missing parameter chunk directory.\n");
+		exit(1);
+	}
+	init(argv[1]);
 	run();
-/*
-	MYSQL *con = mysql_init(NULL);
-
-	if(con == NULL) {
-		fprintf(stderr, "%s\n", mysql_error(con));
-		return(1);
-	}
-
-	if(mysql_real_connect(con, "localhost", "TRNG", "TRNGTRNG", "TRNG", 0, NULL, 0) == NULL) {
-                fprintf(stderr, "%s\n", mysql_error(con));
-                return(1);
-	}
-
-	mysql_query(con, "INSERT INTO chunks VALUES ('ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX', NOW());");
-
-
-	mysql_close(con);
-*/
+	exit(0);
 }
 

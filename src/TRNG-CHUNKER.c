@@ -111,8 +111,9 @@ void init(char *arg) {
 int main(int argc, char *argv[]) {
 	if(argc != 2) {
 		fprintf(stdout, "TRNG-CHUNKER: Missing parameter chunk directory.\n");
-		return(1);
+		exit(1);
 	}
 	init(argv[1]);
 	run();
+	exit(0);
 }
