@@ -80,7 +80,7 @@ void write(void) {
 	time(&t);
 	localTime = *localtime(&t);
 	sprintf(chunkFileName, "%s/CHUNK-%04d%02d%02d%02d%02d.txt", chunkDirectory, localTime.tm_year + 1900, localTime.tm_mon + 1, localTime.tm_mday, localTime.tm_hour, localTime.tm_min);
-	fprintf(stdout, "TRNG-CHUNKER: Writing chunk file %s\n", chunkFileName);
+	fprintf(stdout, "TRNG-CHUNKER: Writing chunk file %s.\n", chunkFileName);
 	for(int c = 0; c < FILESIZE; c++) {
 	        memset(dataBuffer, 0, CHUNKSIZE * sizeof(int) * 8);
         	memset(chunkBuffer, 0, CHUNKSIZE * sizeof(char));

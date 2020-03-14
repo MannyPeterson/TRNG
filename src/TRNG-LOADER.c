@@ -121,7 +121,7 @@ void run(void) {
 	find(chunkFileNames);
 	for(int i = 0; i < MAXFILES; i++) {
 		if(*(chunkFileNames + i) != NULL) {
-			fprintf(stdout, "TRNG-LOADER: Processing chunk file %s\n", *(chunkFileNames + i));
+			fprintf(stdout, "TRNG-LOADER: Processing chunk file %s.\n", *(chunkFileNames + i));
 			memset(chunksBuffer, 0, FILESIZE * sizeof(char *));
 			load(*(chunkFileNames + i), chunksBuffer);
 			remove(*(chunkFileNames + i));
