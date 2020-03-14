@@ -26,6 +26,32 @@ if($conn->connect_error ) {
 	echo "ERROR 005";
 	exit;
 }
+$sql = "SELECT client, chunks FROM clients WHERE client = '" . $_SERVER['REMOTE_ADDR'] . "'";
+$result = $conn->query($sql);
+if ($result->num_rows == 0) {
+	$sql = "INSERT INTO clients (client, chunks) VALUES ('" . $_SERVER['REMOTE_ADDR'] . "', " . $q . ")";
+	if($conn->query($sql) != TRUE) {
+		echo "ERROR 006";
+		$conn->close();
+		exit;
+	} 
+} else {
+	$row = $result->fetch_assoc();
+	$chunks = (int)$row['chunks'];
+	if($chunks > 10) {
+		echo "You have exceeded your daily chunk limit.";
+		$conn->close();
+		exit;
+	} else {
+		$newchunks = $chunks + $q + 0;
+		$sql = "UPDATE clients SET chunks = " . $newchunks . " WHERE client = '" . $_SERVER['REMOTE_ADDR'] . "'";
+		if($conn->query($sql) != TRUE) {
+			echo "ERROR 007";
+			$conn->close();
+			exit;
+		}
+	}
+}
 $sql = "SELECT chunk, created FROM chunks ORDER BY created ASC LIMIT " . $q;
 $result = $conn->query($sql);
 $conn->close();
@@ -45,7 +71,7 @@ if ($result->num_rows > 0) {
 	unlink($filename);
 	exit;
 } else {
-	echo "ERROR 006";
+	echo "ERROR 008";
 	exit;
 }
 exit;

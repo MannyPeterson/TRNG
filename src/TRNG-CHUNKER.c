@@ -39,6 +39,8 @@ void read(int *, int);
 void build(unsigned char *, int *, int);
 void run();
 void init(char *);
+void powerOn();
+void powerOff();
 
 void read(int *dataBuffer, int dataBufferSize) {
 	int dataBufferPos = 0;
