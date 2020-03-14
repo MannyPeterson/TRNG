@@ -16,7 +16,7 @@ if($q > 5) {
 	echo "ERROR 004";
 	exit;
 }
-$filename = "tmp/" . strtoupper(uniqid("CHUNK", true)) . ".txt";
+$filename = "tmp/" . strtoupper(uniqid("CHUNK", false)) . ".txt";
 $dbhost = '127.0.0.1:3306';
 $dbuser = 'TRNG';
 $dbpass = 'TRNGTRNG';
