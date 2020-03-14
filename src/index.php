@@ -6,8 +6,8 @@
  </head>
  <body>
   <form action="/get.php" method="get"> 
-   <label for="q">Quantity [1 - 5]:</label><br>
-   <input type="text" id="q" name="q"><br>
+   <label for="request">Quantity [1 - 5]:</label><br>
+   <input type="text" id="request" name="request"><br>
    <input type="submit" value="Submit">
   </form>
  </body>
