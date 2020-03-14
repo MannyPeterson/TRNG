@@ -28,6 +28,8 @@
 #define MAXFILENAMELEN 500
 #define CLOCK 0
 #define DATA 2
+#define POWER 3
+
 #define SETBIT(x, i) x |= (1 << i)
 #define RSTBIT(x, i) x &= ~(1 << i)
 
@@ -42,8 +44,6 @@ void read(int *dataBuffer, int dataBufferSize) {
 	int dataBufferPos = 0;
 	int clock = 0;
 	int lastClock = 0;
-	pinMode(CLOCK, INPUT);
-	pinMode(DATA, INPUT);
 	do {
 		clock = digitalRead(CLOCK);
 		if(clock != lastClock) {
@@ -112,6 +112,21 @@ void init(char *arg) {
 	fprintf(stdout, "Files: %d\n", chunkFileCount);
 	fprintf(stdout, "Using: %s\n", chunkDirectory);
 	wiringPiSetup();
+        pinMode(CLOCK, INPUT);
+        pinMode(DATA, INPUT);
+	pinMode(POWER, OUTPUT);
+}
+
+void powerOn(void) {
+	digitalWrite(POWER, HIGH);
+	fprintf(stdout, "TRNG-CHUNKER: Powering on TRNG board.\n");
+	delay(5000);
+}
+
+void powerOff(void) {
+	digitalWrite(POWER, LOW);
+	fprintf(stdout, "TRNG-CHUNKER: Powering off TRNG board.\n");
+	delay(5000);
 }
 
 int main(int argc, char *argv[]) {
@@ -125,6 +140,8 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 	init(argv[1]);
+	powerOn();
 	run();
+	powerOff();
 	exit(0);
 }
